@@ -1,3 +1,0 @@
-Trial for git project final
-
-This is on the master branch
