@@ -57,7 +57,7 @@ class EditProfile extends StatelessWidget {
                     ct_name.text = currentUser.ctname;
                     ct_phno.text = currentUser.ctphno;
                     ct_email.text = currentUser.ctemail;
-                    print("here is testing : ");
+                    print("here is : ");
                     print(currentUser.age);
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
