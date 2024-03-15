@@ -45,7 +45,7 @@ class Notes extends StatelessWidget {
         ),
         appBar: AppBar(
           //backgroundColor: theme.colorScheme.secondary,
-          toolbarHeight: 60,
+          toolbarHeight: 70,
           flexibleSpace: const AppbarDecoration(),
           centerTitle: true,
           title: Text(
