@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
+
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,14 +12,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:audio_streamer/audio_streamer.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_silero_vad/flutter_silero_vad.dart';
+import 'package:flutter_vad/flutter_vad.dart';
 import 'package:intl/intl.dart';
+import 'package:memory_aid/provider/summary_provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'package:memory_aid/provider/record_provider.dart';
+import 'package:provider/provider.dart';
+
 class RecorderService {
   final recorder = AudioStreamer.instance;
-  final vad = FlutterSileroVad();
+  final vad = FlutterVad();
 
   //audio to text api
   final String apiUrl =
@@ -26,9 +32,13 @@ class RecorderService {
     "Authorization": "Bearer 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"
   };
 
+  // Get the info about is today summary is created
+
+  bool is_summary_generated = false;
+
   // Get the path to store the downloaded model file
   Future<String> get modelPath async =>
-      '${(await getApplicationSupportDirectory()).path}/silero_vad.onnx';
+      '${(await getApplicationSupportDirectory()).path}/our_vad.onnx';
 
   // Sample rate (frequency) of the audio recording in Hz
   final int sampleRate = 16000;
@@ -130,6 +140,7 @@ class RecorderService {
   Future<String> query(String filename) async {
     File file = File(filename);
     List<int> data = await file.readAsBytes();
+    print('data is $data');
     var response =
         await http.post(Uri.parse(apiUrl), headers: headers, body: data);
     Map<String, dynamic> result = jsonDecode(response.body);
@@ -142,12 +153,25 @@ class RecorderService {
     final textId = FirebaseFirestore.instance
         .collection('users/${FirebaseAuth.instance.currentUser!.uid}/texts')
         .doc(currentDate);
-    DocumentSnapshot snapshot = await textId.get();
-    data = snapshot.data();
-    String? available = data?['content'] as String?;
 
-    String newText = (available ?? '') + text;
-    textId.set({'id': textId, 'content': newText});
+    DocumentSnapshot snapshot = await textId.get();
+
+    if (snapshot.exists) {
+      data = snapshot.data();
+      String? available = data?['content'] as String?;
+
+      String newText = (available ?? '') + text;
+      textId.set({
+        'is_summarized': data?['is_summarized'],
+        'id': textId,
+        'content': newText
+      });
+    } else {
+      data = snapshot.data();
+      String? available = data?['content'] as String?;
+      String newText = (available ?? '') + text;
+      textId.set({'is_summarized': false, 'id': textId, 'content': newText});
+    }
   }
 
   // Stops recording audio and cancels subscriptions
@@ -205,6 +229,68 @@ class RecorderService {
         await vad.predict(Float32List.fromList(transformedBufferFloat));
     print('here is printing : $isActivated');
 
+    // checking for if the time for summarisation is reached or not
+
+    //  we are checking for 3 conditions
+    // 1. user's sleep time is reached
+    // 2. user is not speaking for a long time(5s)
+    // 3. user is not speaking right now
+
+    var user_sleep_time_hour = 11;
+    if (!is_summary_generated && DateTime.now().hour == user_sleep_time_hour) {
+      if (isActivated != true && lastActiveTime == null) {
+        // checking wheather already summarized or not
+
+        final data;
+        String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+        final textId = FirebaseFirestore.instance
+            .collection('users/${FirebaseAuth.instance.currentUser!.uid}/texts')
+            .doc(currentDate);
+        DocumentSnapshot snapshot = await textId.get();
+
+        if (snapshot.exists) {
+          data = snapshot.data();
+          is_summary_generated = data?['is_summarized'];
+
+          // checking wheather already summarized or not
+          if (!is_summary_generated) {
+            print("its time for summary");
+
+            // final provider = RecordProvider();
+            print("stoping listening");
+
+            // call the summary functions
+            String? available = data?['content'] as String?;
+
+            final provider = SummaryProvider();
+            final summary = await provider.Summaryquery({"inputs": available});
+            final summaryId = FirebaseFirestore.instance
+                .collection(
+                    'users/${FirebaseAuth.instance.currentUser!.uid}/summary')
+                .doc(currentDate);
+            summaryId.set(
+                {'id': summaryId, 'summary': summary, 'date': currentDate});
+
+            is_summary_generated = true;
+            print("the truth value :");
+            print(is_summary_generated);
+
+            // updating the is_summary in the firebase
+
+            textId.update({
+              'is_summarized':
+                  is_summary_generated, // Update the value of 'is_summarized'
+            });
+
+            print("Resuming listening im waiting");
+          }
+        }
+        // checking wheather already summarized or not
+      }
+    }
+
+    print("current time = ");
+    print(DateTime.now().hour == 14);
     print('time diff :');
     if (lastActiveTime != null)
       print(DateTime.now().difference(lastActiveTime!));
@@ -299,7 +385,7 @@ class RecorderService {
 
   // Copies the ONNX model file from assets to the application directory
   Future<void> onnxModelToLocal() async {
-    final data = await rootBundle.load('assets/vad_model/silero_vad.onnx');
+    final data = await rootBundle.load('assets/vad_model/our_vad.onnx');
     final bytes =
         data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
     File(await modelPath).writeAsBytesSync(bytes);
