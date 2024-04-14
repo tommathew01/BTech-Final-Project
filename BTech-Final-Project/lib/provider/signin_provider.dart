@@ -4,13 +4,12 @@ import 'package:google_sign_in/google_sign_in.dart';
 // import 'package:googleapis_auth.dart';
 // Assuming you have a function to handle Google Sign-In
 
-
 class GoogleSignInProvider extends ChangeNotifier {
   final googleSignIn = GoogleSignIn();
   GoogleSignInAccount? _user;
   bool _isNewUser = true;
   GoogleSignInAccount? get user => _user;
-  bool get isNewUser => _isNewUser; 
+  bool get isNewUser => _isNewUser;
 
   String _accessToken = '';
   String get accessToken => _accessToken;
@@ -19,9 +18,10 @@ class GoogleSignInProvider extends ChangeNotifier {
     _accessToken = accessToken;
     notifyListeners();
   }
-  
+
   Future googleLogin() async {
-    final googleUser = await GoogleSignIn(scopes: ['https://mail.google.com/']).signIn();
+    final googleUser =
+        await GoogleSignIn(scopes: ['https://mail.google.com/']).signIn();
     if (googleUser == null) return;
     _user = googleUser;
 
@@ -33,10 +33,11 @@ class GoogleSignInProvider extends ChangeNotifier {
     print(credential);
 
     Future<bool> isNewUserMethod(String email) async {
+      print("inside here");
       try {
         final methods =
             await FirebaseAuth.instance.fetchSignInMethodsForEmail(email);
-            notifyListeners();
+        notifyListeners();
         return methods.isNotEmpty;
       } catch (e) {
         return false;
@@ -44,21 +45,14 @@ class GoogleSignInProvider extends ChangeNotifier {
     }
 
     _isNewUser = await isNewUserMethod(googleUser.email);
-    
+
     await FirebaseAuth.instance.signInWithCredential(credential);
     notifyListeners();
   }
-
 
   Future logout() async {
     await googleSignIn.disconnect();
     FirebaseAuth.instance.signOut();
     notifyListeners();
   }
-
-
-
-
-    
-
 }

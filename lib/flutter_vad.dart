@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'flutter_silero_vad_platform_interface.dart';
 
-class FlutterSileroVad {
+class FlutterVad {
   Future<String?> initialize(
       {required String modelPath,
       required int sampleRate,
