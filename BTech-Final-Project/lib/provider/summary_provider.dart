@@ -13,7 +13,6 @@ class SummaryProvider with ChangeNotifier {
   String? get selectedDate => _selectedDate;
   String? get selectedSummary => _selectedSummary;
 
-
   void setselectedDate(String? value) {
     _selectedDate = value;
     notifyListeners();
@@ -56,15 +55,12 @@ class SummaryProvider with ChangeNotifier {
   //   return available;
   // }
 
-  
-
-
   Future<String> questionQuery(Map<String, dynamic> payload) async {
     var output;
     do {
       var response = await http.post(Uri.parse(apiUrl),
           headers: headers, body: jsonEncode(payload));
-      
+
       print("testing imp here");
       print(response);
       print(response.body);
@@ -81,7 +77,6 @@ class SummaryProvider with ChangeNotifier {
     "Authorization": "Bearer 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",
   };
   Future<String> Summaryquery(Map<String, dynamic> payload) async {
-    
     // var text_payl = getText();
     var output;
 
@@ -117,7 +112,6 @@ class SummaryProvider with ChangeNotifier {
           .set({'question${++j}': question, 'answer${j}': answer},
               SetOptions(merge: true));
 
-      
       print("question part : " + question);
       print(answer);
     }

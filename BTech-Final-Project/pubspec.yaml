@@ -61,6 +61,8 @@ dependencies:
   hooks_riverpod: ^2.5.1
   flutter_vad:
     path: ../
+  cron: ^0.6.0
+  awesome_notifications: ^0.8.2
 
 dev_dependencies:
   flutter_test:
