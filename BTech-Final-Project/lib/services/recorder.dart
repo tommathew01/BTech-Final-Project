@@ -236,58 +236,59 @@ class RecorderService {
     // 2. user is not speaking for a long time(5s)
     // 3. user is not speaking right now
 
-    var user_sleep_time_hour = 11;
-    if (!is_summary_generated && DateTime.now().hour == user_sleep_time_hour) {
-      if (isActivated != true && lastActiveTime == null) {
-        // checking wheather already summarized or not
+    // var user_sleep_time_hour = 18;
+    // if (!is_summary_generated && DateTime.now().hour == user_sleep_time_hour) {
+    //   if (isActivated != true && lastActiveTime == null) {
+    //     // checking wheather already summarized or not
 
-        final data;
-        String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
-        final textId = FirebaseFirestore.instance
-            .collection('users/${FirebaseAuth.instance.currentUser!.uid}/texts')
-            .doc(currentDate);
-        DocumentSnapshot snapshot = await textId.get();
+    //     final data;
+    //     String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    //     final textId = FirebaseFirestore.instance
+    //         .collection('users/${FirebaseAuth.instance.currentUser!.uid}/texts')
+    //         .doc(currentDate);
+    //     DocumentSnapshot snapshot = await textId.get();
 
-        if (snapshot.exists) {
-          data = snapshot.data();
-          is_summary_generated = data?['is_summarized'];
+    //     if (snapshot.exists) {
+    //       data = snapshot.data();
+    //       is_summary_generated = data?['is_summarized'];
 
-          // checking wheather already summarized or not
-          if (!is_summary_generated) {
-            print("its time for summary");
+    //       // checking wheather already summarized or not
+    //       if (!is_summary_generated) {
+    //         print("its time for summary");
 
-            // final provider = RecordProvider();
-            print("stoping listening");
+    //         // final provider = RecordProvider();
+    //         print("stoping listening");
 
-            // call the summary functions
-            String? available = data?['content'] as String?;
+    //         // call the summary functions
+    //         String? available = data?['content'] as String?;
 
-            final provider = SummaryProvider();
-            final summary = await provider.Summaryquery({"inputs": available});
-            final summaryId = FirebaseFirestore.instance
-                .collection(
-                    'users/${FirebaseAuth.instance.currentUser!.uid}/summary')
-                .doc(currentDate);
-            summaryId.set(
-                {'id': summaryId, 'summary': summary, 'date': currentDate});
+    //         final provider = SummaryProvider();
+    //         final summary = await provider.Summaryquery({"inputs": available});
+    //         print("summary is : $summary");
+    //         final summaryId = FirebaseFirestore.instance
+    //             .collection(
+    //                 'users/${FirebaseAuth.instance.currentUser!.uid}/summary')
+    //             .doc(currentDate);
+    //         summaryId.set(
+    //             {'id': summaryId, 'summary': summary, 'date': currentDate});
 
-            is_summary_generated = true;
-            print("the truth value :");
-            print(is_summary_generated);
+    //         is_summary_generated = true;
+    //         print("the truth value :");
+    //         print(is_summary_generated);
 
-            // updating the is_summary in the firebase
+    //         // updating the is_summary in the firebase
 
-            textId.update({
-              'is_summarized':
-                  is_summary_generated, // Update the value of 'is_summarized'
-            });
+    //         textId.update({
+    //           'is_summarized':
+    //               is_summary_generated, // Update the value of 'is_summarized'
+    //         });
 
-            print("Resuming listening im waiting");
-          }
-        }
-        // checking wheather already summarized or not
-      }
-    }
+    //         print("Resuming listening im waiting");
+    //       }
+    //     }
+    //     // checking wheather already summarized or not
+    //   }
+    // }
 
     print("current time = ");
     print(DateTime.now().hour == 14);
