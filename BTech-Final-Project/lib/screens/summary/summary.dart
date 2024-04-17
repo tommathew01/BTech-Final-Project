@@ -74,7 +74,7 @@ class SummaryPage extends StatelessWidget {
                         .setsearch(true);
                     Provider.of<SearchProvider>(context, listen: false)
                         .setres("");
-                    final currentDate1 = DateTime(2024, 04, 17);
+                    final currentDate1 = DateTime.now();
                     final DateFormat formatter = DateFormat('yyyy-MM-dd');
                     String combinedText = '';
                     for (int i = 0; i < 7; i++) {
