@@ -65,7 +65,7 @@ class _RecordButtonState extends State<RecordButton> {
           ),
         ),
         Text(
-          _isrecording ? "Recording your conversations..." : "Tap to record the conversations",
+          _isrecording ? "Listening your conversations..." : "Tap to Listen the conversations",
           style: GoogleFonts.manrope(
             color: theme.colorScheme.secondary,
             textStyle: const TextStyle(fontSize: 17)
