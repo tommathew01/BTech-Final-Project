@@ -89,17 +89,17 @@ void main() async {
   }
 
   cron.schedule(
-      Schedule.parse('19 19 * * *'),
+      Schedule.parse('0 10 * * *'),
       () async => {
             AwesomeNotifications().createNotification(
                 content: NotificationContent(
               id: 1,
               channelKey: 'key1',
-              title: 'Healthguide',
-              body: 'Time for your next glass of water',
+              title: 'Exercise!!',
+              body: 'Hurry up and Complete todays exercise.',
             ))
           });
-  cron.schedule(Schedule.parse('20 19 * * *'), () async => {await summarize()});
+  cron.schedule(Schedule.parse('59 23 * * *'), () async => {await summarize()});
 
   runApp(const MyApp());
 }
